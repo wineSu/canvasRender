@@ -1,14 +1,10 @@
-'use strict';
+import { getValue, buildOptions, isExist, getAllMatches } from './util';
+import {xmlNode} from './xmlNode';
+import {X2jOptionsOptional, GetTraversalObj} from './type';
 
-const util = require('./util');
-const buildOptions = require('./util').buildOptions;
-const xmlNode = require('./xmlNode');
 const TagType = {OPENING: 1, CLOSING: 2, SELF: 3, CDATA: 4};
 let regx =
   '<((!\\[CDATA\\[([\\s\\S]*?)(]]>))|(([\\w:\\-._]*:)?([\\w:\\-._]+))([^>]*)>|((\\/)(([\\w:\\-._]*:)?([\\w:\\-._]+))\\s*>))([^<]*)';
-
-//const tagsRegx = new RegExp("<(\\/?[\\w:\\-\._]+)([^>]*)>(\\s*"+cdataRegx+")*([^<]+)?","g");
-//const tagsRegx = new RegExp("<(\\/?)((\\w*:)?([\\w:\\-\._]+))([^>]*)>([^<]*)("+cdataRegx+"([^<]*))*([^<]+)?","g");
 
 //polyfill
 if (!Number.parseInt && window.parseInt) {
@@ -18,7 +14,7 @@ if (!Number.parseFloat && window.parseFloat) {
   Number.parseFloat = window.parseFloat;
 }
 
-const defaultOptions = {
+export const defaultOptions: X2jOptionsOptional  = {
   attributeNamePrefix: '@_',
   attrNodeName: false,
   textNodeName: '#text',
@@ -43,9 +39,7 @@ const defaultOptions = {
   //decodeStrict: false,
 };
 
-exports.defaultOptions = defaultOptions;
-
-const props = [
+export const props = [
   'attributeNamePrefix',
   'attrNodeName',
   'textNodeName',
@@ -64,11 +58,9 @@ const props = [
   'parseTrueNumberOnly',
   'stopNodes'
 ];
-exports.props = props;
 
-const getTraversalObj = function(xmlData, options) {
+export const getTraversalObj:GetTraversalObj = function(xmlData, options) {
   options = buildOptions(options, defaultOptions, props);
-  //xmlData = xmlData.replace(/\r?\n/g, " ");//make it single line
   xmlData = xmlData.replace(/<!--[\s\S]*?-->/g, ''); //Remove  comments
 
   const xmlObj = new xmlNode('!xml');
@@ -84,9 +76,9 @@ const getTraversalObj = function(xmlData, options) {
     if (tagType === TagType.CLOSING) {
       //add parsed data to parent node
       if (currentNode.parent && tag[14]) {
-        currentNode.parent.val = util.getValue(currentNode.parent.val) + '' + processTagValue(tag, options, currentNode.parent.tagname);
+        currentNode.parent.val = getValue(currentNode.parent.val) + '' + processTagValue(tag, options, currentNode.parent.tagname);
       }
-      if (options.stopNodes.length && options.stopNodes.includes(currentNode.tagname)) {
+      if (options.stopNodes?.length && options.stopNodes.includes(currentNode.tagname)) {
         currentNode.child = []
         if (currentNode.attrsMap == undefined) { currentNode.attrsMap = {}}
         currentNode.val = xmlData.substr(currentNode.startIndex + 1, tag.index - currentNode.startIndex - 1)
@@ -99,7 +91,7 @@ const getTraversalObj = function(xmlData, options) {
         childNode.attrsMap = buildAttributesMap(tag[8], options);
         currentNode.addChild(childNode);
         //for backtracking
-        currentNode.val = util.getValue(currentNode.val) + options.cdataPositionChar;
+        currentNode.val = getValue(currentNode.val) + options.cdataPositionChar;
         //add rest value to parent node
         if (tag[14]) {
           currentNode.val += processTagValue(tag, options);
@@ -109,7 +101,7 @@ const getTraversalObj = function(xmlData, options) {
       }
     } else if (tagType === TagType.SELF) {
       if (currentNode && tag[14]) {
-        currentNode.val = util.getValue(currentNode.val) + '' + processTagValue(tag, options);
+        currentNode.val = getValue(currentNode.val) + '' + processTagValue(tag, options);
       }
 
       const childNode = new xmlNode(options.ignoreNameSpace ? tag[7] : tag[5], currentNode, '');
@@ -125,7 +117,7 @@ const getTraversalObj = function(xmlData, options) {
         currentNode,
         processTagValue(tag, options)
       );
-      if (options.stopNodes.length && options.stopNodes.includes(childNode.tagname)) {
+      if (options.stopNodes?.length && options.stopNodes.includes(childNode.tagname)) {
         childNode.startIndex=tag.index + tag[1].length
       }
       childNode.attrsMap = buildAttributesMap(tag[8], options);
@@ -140,7 +132,7 @@ const getTraversalObj = function(xmlData, options) {
   return xmlObj;
 };
 
-function processTagValue(parsedTags, options, parentTagName) {
+function processTagValue(parsedTags: any, options: any, parentTagName?: string) {
   const tagName = parsedTags[7] || parentTagName;
   let val = parsedTags[14];
   if (val) {
@@ -154,7 +146,7 @@ function processTagValue(parsedTags, options, parentTagName) {
   return val;
 }
 
-function checkForTagType(match) {
+function checkForTagType(match: any) {
   if (match[4] === ']]>') {
     return TagType.CDATA;
   } else if (match[10] === '/') {
@@ -166,7 +158,7 @@ function checkForTagType(match) {
   }
 }
 
-function resolveNameSpace(tagname, options) {
+function resolveNameSpace(tagname: any, options: X2jOptionsOptional) {
   if (options.ignoreNameSpace) {
     const tags = tagname.split(':');
     const prefix = tagname.charAt(0) === '/' ? '/' : '';
@@ -180,10 +172,10 @@ function resolveNameSpace(tagname, options) {
   return tagname;
 }
 
-function parseValue(val, shouldParse, parseTrueNumberOnly) {
+function parseValue(val: string, shouldParse: boolean, parseTrueNumberOnly: boolean) {
   if (shouldParse && typeof val === 'string') {
     let parsed;
-    if (val.trim() === '' || isNaN(val)) {
+    if (val.trim() === '' || isNaN(val as any)) {
       parsed = val === 'true' ? true : val === 'false' ? false : val;
     } else {
       if (val.indexOf('0x') !== -1) {
@@ -200,7 +192,7 @@ function parseValue(val, shouldParse, parseTrueNumberOnly) {
     }
     return parsed;
   } else {
-    if (util.isExist(val)) {
+    if (isExist(val)) {
       return val;
     } else {
       return '';
@@ -208,18 +200,16 @@ function parseValue(val, shouldParse, parseTrueNumberOnly) {
   }
 }
 
-//TODO: change regex to capture NS
-//const attrsRegx = new RegExp("([\\w\\-\\.\\:]+)\\s*=\\s*(['\"])((.|\n)*?)\\2","gm");
 const attrsRegx = new RegExp('([^\\s=]+)\\s*(=\\s*([\'"])(.*?)\\3)?', 'g');
 
-function buildAttributesMap(attrStr, options) {
+function buildAttributesMap(attrStr: string, options: any) {
   if (!options.ignoreAttributes && typeof attrStr === 'string') {
     attrStr = attrStr.replace(/\r?\n/g, ' ');
     //attrStr = attrStr || attrStr.trim();
 
-    const matches = util.getAllMatches(attrStr, attrsRegx);
+    const matches = getAllMatches(attrStr, attrsRegx);
     const len = matches.length; //don't make it inline
-    const attrs = {};
+    const attrs = {} as any;
     for (let i = 0; i < len; i++) {
       const attrName = resolveNameSpace(matches[i][1], options);
       if (attrName.length) {
@@ -242,12 +232,10 @@ function buildAttributesMap(attrStr, options) {
       return;
     }
     if (options.attrNodeName) {
-      const attrCollection = {};
+      const attrCollection = {} as any;
       attrCollection[options.attrNodeName] = attrs;
       return attrCollection;
     }
     return attrs;
   }
 }
-
-exports.getTraversalObj = getTraversalObj;

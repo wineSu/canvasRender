@@ -1,22 +1,20 @@
-import {parse} from './type';
-
-const nodeToJson = require('./node2json');
-const xmlToNodeobj = require('./xmlstr2xmlnode');
-const x2xmlnode = require('./xmlstr2xmlnode');
-const buildOptions = require('./util').buildOptions;
-const validator = require('./validator');
+import {parse, X2jOptionsOptional} from './type';
+import {convertToJson} from './node2json';
+import {getTraversalObj, defaultOptions, props} from './xmlstr2xmlnode';
+import {buildOptions} from './util';
+import {validate} from './validator';
 
 const Parser:parse = (xmlData, options, validationOption) => {
    if( validationOption){
      if(validationOption === true) validationOption = {}
 
-     const result = validator.validate(xmlData, validationOption);
+     const result = validate(xmlData, validationOption);
      if (result !== true) {
        throw Error( result.err.msg)
      }
    }
-  options = buildOptions(options, x2xmlnode.defaultOptions, x2xmlnode.props);
-  return nodeToJson.convertToJson(xmlToNodeobj.getTraversalObj(xmlData, options), options);
+  const newOption: X2jOptionsOptional = buildOptions(options, defaultOptions, props);
+  return convertToJson(getTraversalObj(xmlData, newOption), newOption);
 };
 
 export default Parser;

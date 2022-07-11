@@ -1,4 +1,4 @@
-type X2jOptions = {
+export type X2jOptions = {
   attributeNamePrefix: string;
   attrNodeName: false | string;
   textNodeName: string;
@@ -17,13 +17,13 @@ type X2jOptions = {
   attrValueProcessor: (attrValue: string, attrName: string) => string;
   stopNodes: string[];
 };
-type X2jOptionsOptional = Partial<X2jOptions>;
+export type X2jOptionsOptional = Partial<X2jOptions>;
 type validationOptions = {
   allowBooleanAttributes: boolean;
   localeRange: string;
 };
 type validationOptionsOptional = Partial<validationOptions>;
-type J2xOptions = {
+export type J2xOptions = {
   attributeNamePrefix: string;
   attrNodeName: false | string;
   textNodeName: string;
@@ -50,11 +50,11 @@ export type convert2nimn = (
   e_schema: ESchema,
   options?: X2jOptionsOptional
 ) => any;
-export type getTraversalObj = (
+export type GetTraversalObj = (
   xmlData: string,
-  options?: X2jOptionsOptional
+  options: X2jOptionsOptional
 ) => any;
-export type convertToJson = (node: any, options?: X2jOptionsOptional) => any;
+export type ConvertToJson = (node: any, options: X2jOptionsOptional) => any;
 export type convertToJsonString = (
   node: any,
   options?: X2jOptionsOptional

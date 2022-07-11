@@ -1,6 +1,5 @@
-'use strict';
-
-const util = require('./util');
+import { doesNotMatch, buildOptions, doesMatch, getAllMatches } from './util';
+import {X2jOptionsOptional} from './type';
 
 const defaultOptions = {
   allowBooleanAttributes: false, //A tag can have attributes without any value
@@ -9,34 +8,20 @@ const defaultOptions = {
 
 const props = ['allowBooleanAttributes', 'localeRange'];
 
-//const tagsPattern = new RegExp("<\\/?([\\w:\\-_\.]+)\\s*\/?>","g");
-exports.validate = function(xmlData, options) {
-  options = util.buildOptions(options, defaultOptions, props);
-
-  //xmlData = xmlData.replace(/(\r\n|\n|\r)/gm,"");//make it single line
-  //xmlData = xmlData.replace(/(^\s*<\?xml.*?\?>)/g,"");//Remove XML starting tag
-  //xmlData = xmlData.replace(/(<!DOCTYPE[\s\w\"\.\/\-\:]+(\[.*\])*\s*>)/g,"");//Remove DOCTYPE
+export const validate = (xmlData: string, options: X2jOptionsOptional) => {
+  options = buildOptions(options, defaultOptions, props);
 
   const tags = [];
   let tagFound = false;
   if (xmlData[0] === '\ufeff') {
-    // check for byte order mark (BOM)
     xmlData = xmlData.substr(1);
   }
   const regxAttrName = new RegExp('^[_w][\\w\\-.:]*$'.replace('_w', '_' + options.localeRange));
   const regxTagName = new RegExp('^([w]|_)[\\w.\\-_:]*'.replace('([w', '([' + options.localeRange));
   for (let i = 0; i < xmlData.length; i++) {
     if (xmlData[i] === '<') {
-      //starting of tag
-      //read until you reach to '>' avoiding any '>' in attribute value
-
       i++;
-      if (xmlData[i] === '?') {
-        i = readPI(xmlData, ++i);
-        if (i.err) {
-          return i;
-        }
-      } else if (xmlData[i] === '!') {
+      if (xmlData[i] === '!') {
         i = readCommentAndCDATA(xmlData, i);
         continue;
       } else {
@@ -157,7 +142,7 @@ exports.validate = function(xmlData, options) {
  * @param {*} xmlData
  * @param {*} i
  */
-function readPI(xmlData, i) {
+function readPI(xmlData: string, i: number) {
   var start = i;
   for (; i < xmlData.length; i++) {
     if (xmlData[i] == '?' || xmlData[i] == ' ') {
@@ -177,7 +162,7 @@ function readPI(xmlData, i) {
   return i;
 }
 
-function readCommentAndCDATA(xmlData, i) {
+function readCommentAndCDATA(xmlData: string, i: number) {
   if (xmlData.length > i + 5 && xmlData[i + 1] === '-' && xmlData[i + 2] === '-') {
     //comment
     for (i += 3; i < xmlData.length; i++) {
@@ -236,7 +221,7 @@ var singleQuote = "'";
  * @param {string} xmlData
  * @param {number} i
  */
-function readAttributeStr(xmlData, i) {
+function readAttributeStr(xmlData: string, i: number) {
   let attrStr = '';
   let startChar = '';
   let tagClosed = false;
@@ -272,13 +257,13 @@ const validAttrStrRegxp = new RegExp('(\\s*)([^\\s=]+)(\\s*=)?(\\s*([\'"])(([\\s
 
 //attr, ="sd", a="amit's", a="sd"b="saf", ab  cd=""
 
-function validateAttributeString(attrStr, options, regxAttrName) {
+function validateAttributeString(attrStr: string, options: X2jOptionsOptional, regxAttrName: RegExp) {
   //console.log("start:"+attrStr+":end");
 
   //if(attrStr.trim().length === 0) return true; //empty string
 
-  const matches = util.getAllMatches(attrStr, validAttrStrRegxp);
-  const attrNames = {};
+  const matches = getAllMatches(attrStr, validAttrStrRegxp);
+  const attrNames = {} as any;
 
   for (let i = 0; i < matches.length; i++) {
     //console.log(matches[i]);
@@ -309,18 +294,11 @@ function validateAttributeString(attrStr, options, regxAttrName) {
   return true;
 }
 
-// const validAttrRegxp = /^[_a-zA-Z][\w\-.:]*$/;
-
-function validateAttrName(attrName, regxAttrName) {
+function validateAttrName(attrName: string, regxAttrName: RegExp) {
   // const validAttrRegxp = new RegExp(regxAttrName);
-  return util.doesMatch(attrName, regxAttrName);
+  return doesMatch(attrName, regxAttrName);
 }
 
-//const startsWithXML = new RegExp("^[Xx][Mm][Ll]");
-//  startsWith = /^([a-zA-Z]|_)[\w.\-_:]*/;
-
-function validateTagName(tagname, regxTagName) {
-  /*if(util.doesMatch(tagname,startsWithXML)) return false;
-    else*/
-  return !util.doesNotMatch(tagname, regxTagName);
+function validateTagName(tagname: string, regxTagName: RegExp) {
+  return !doesNotMatch(tagname, regxTagName);
 }

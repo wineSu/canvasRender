@@ -1,4 +1,4 @@
-import { doesNotMatch, buildOptions, doesMatch, getAllMatches } from './util';
+import { buildOptions, doesMatch, getAllMatches } from './util';
 import {X2jOptionsOptional} from './type';
 
 const defaultOptions = {
@@ -46,7 +46,6 @@ export const validate = (xmlData: string, options: X2jOptionsOptional) => {
           tagName += xmlData[i];
         }
         tagName = tagName.trim();
-        //console.log(tagName);
 
         if (tagName[tagName.length - 1] === '/') {
           //self closing tag without attributes
@@ -70,7 +69,6 @@ export const validate = (xmlData: string, options: X2jOptionsOptional) => {
           const isValid = validateAttributeString(attrStr, options, regxAttrName);
           if (isValid === true) {
             tagFound = true;
-            //continue; //text may presents after self closing tag
           } else {
             return isValid;
           }
@@ -137,31 +135,6 @@ export const validate = (xmlData: string, options: X2jOptionsOptional) => {
   return true;
 };
 
-/**
- * Read Processing insstructions and skip
- * @param {*} xmlData
- * @param {*} i
- */
-function readPI(xmlData: string, i: number) {
-  var start = i;
-  for (; i < xmlData.length; i++) {
-    if (xmlData[i] == '?' || xmlData[i] == ' ') {
-      //tagname
-      var tagname = xmlData.substr(start, i - start);
-      if (i > 5 && tagname === 'xml') {
-        return {err: {code: 'InvalidXml', msg: 'XML declaration allowed only at the start of the document.'}};
-      } else if (xmlData[i] == '?' && xmlData[i + 1] == '>') {
-        //check if valid attribut string
-        i++;
-        break;
-      } else {
-        continue;
-      }
-    }
-  }
-  return i;
-}
-
 function readCommentAndCDATA(xmlData: string, i: number) {
   if (xmlData.length > i + 5 && xmlData[i + 1] === '-' && xmlData[i + 2] === '-') {
     //comment
@@ -171,50 +144,9 @@ function readCommentAndCDATA(xmlData: string, i: number) {
         break;
       }
     }
-  } else if (
-    xmlData.length > i + 8 &&
-    xmlData[i + 1] === 'D' &&
-    xmlData[i + 2] === 'O' &&
-    xmlData[i + 3] === 'C' &&
-    xmlData[i + 4] === 'T' &&
-    xmlData[i + 5] === 'Y' &&
-    xmlData[i + 6] === 'P' &&
-    xmlData[i + 7] === 'E'
-  ) {
-    let angleBracketsCount = 1;
-    for (i += 8; i < xmlData.length; i++) {
-      if (xmlData[i] === '<') {
-        angleBracketsCount++;
-      } else if (xmlData[i] === '>') {
-        angleBracketsCount--;
-        if (angleBracketsCount === 0) {
-          break;
-        }
-      }
-    }
-  } else if (
-    xmlData.length > i + 9 &&
-    xmlData[i + 1] === '[' &&
-    xmlData[i + 2] === 'C' &&
-    xmlData[i + 3] === 'D' &&
-    xmlData[i + 4] === 'A' &&
-    xmlData[i + 5] === 'T' &&
-    xmlData[i + 6] === 'A' &&
-    xmlData[i + 7] === '['
-  ) {
-    for (i += 8; i < xmlData.length; i++) {
-      if (xmlData[i] === ']' && xmlData[i + 1] === ']' && xmlData[i + 2] === '>') {
-        i += 2;
-        break;
-      }
-    }
   }
-
   return i;
 }
-
-var doubleQuote = '"';
-var singleQuote = "'";
 
 /**
  * Keep reading xmlData until '<' is found outside the attribute value.
@@ -225,6 +157,9 @@ function readAttributeStr(xmlData: string, i: number) {
   let attrStr = '';
   let startChar = '';
   let tagClosed = false;
+
+  const doubleQuote = '"';
+  const singleQuote = "'";
   for (; i < xmlData.length; i++) {
     if (xmlData[i] === doubleQuote || xmlData[i] === singleQuote) {
       if (startChar === '') {
@@ -258,31 +193,23 @@ const validAttrStrRegxp = new RegExp('(\\s*)([^\\s=]+)(\\s*=)?(\\s*([\'"])(([\\s
 //attr, ="sd", a="amit's", a="sd"b="saf", ab  cd=""
 
 function validateAttributeString(attrStr: string, options: X2jOptionsOptional, regxAttrName: RegExp) {
-  //console.log("start:"+attrStr+":end");
-
-  //if(attrStr.trim().length === 0) return true; //empty string
-
   const matches = getAllMatches(attrStr, validAttrStrRegxp);
   const attrNames = {} as any;
 
   for (let i = 0; i < matches.length; i++) {
-    //console.log(matches[i]);
-
     if (matches[i][1].length === 0) {
       //nospace before attribute name: a="sd"b="saf"
       return {err: {code: 'InvalidAttr', msg: 'attribute ' + matches[i][2] + ' has no space in starting.'}};
     } else if (matches[i][3] === undefined && !options.allowBooleanAttributes) {
       //independent attribute: ab
       return {err: {code: 'InvalidAttr', msg: 'boolean attribute ' + matches[i][2] + ' is not allowed.'}};
+    } else if(matches[i][6] === undefined){//attribute without value: ab=
+      return { err: { code:"InvalidAttr",msg:"attribute " + matches[i][2] + " has no value assigned."}};
     }
-    /* else if(matches[i][6] === undefined){//attribute without value: ab=
-                    return { err: { code:"InvalidAttr",msg:"attribute " + matches[i][2] + " has no value assigned."}};
-                } */
     const attrName = matches[i][2];
     if (!validateAttrName(attrName, regxAttrName)) {
       return {err: {code: 'InvalidAttr', msg: 'attribute ' + attrName + ' is an invalid name.'}};
     }
-    /*if (!attrNames.hasOwnProperty(attrName)) {*/
     if ( !Object.prototype.hasOwnProperty.call(attrNames, attrName)) {
       //check for duplicate attribute.
       attrNames[attrName] = 1;
@@ -295,10 +222,9 @@ function validateAttributeString(attrStr: string, options: X2jOptionsOptional, r
 }
 
 function validateAttrName(attrName: string, regxAttrName: RegExp) {
-  // const validAttrRegxp = new RegExp(regxAttrName);
   return doesMatch(attrName, regxAttrName);
 }
 
 function validateTagName(tagname: string, regxTagName: RegExp) {
-  return !doesNotMatch(tagname, regxTagName);
+  return doesMatch(tagname, regxTagName);
 }

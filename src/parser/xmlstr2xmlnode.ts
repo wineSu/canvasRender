@@ -60,10 +60,9 @@ export const props = [
 ];
 
 export const getTraversalObj:GetTraversalObj = function(xmlData, options) {
-  options = buildOptions(options, defaultOptions, props);
   xmlData = xmlData.replace(/<!--[\s\S]*?-->/g, ''); //Remove  comments
 
-  const xmlObj = new xmlNode('!xml');
+  const xmlObj = new xmlNode('canvas-xml');
   let currentNode = xmlObj;
 
   regx = regx.replace(/\[\\w/g, '[' + options.localeRange + '\\w');
@@ -84,21 +83,6 @@ export const getTraversalObj:GetTraversalObj = function(xmlData, options) {
         currentNode.val = xmlData.substr(currentNode.startIndex + 1, tag.index - currentNode.startIndex - 1)
       }
       currentNode = currentNode.parent;
-    } else if (tagType === TagType.CDATA) {
-      if (options.cdataTagName) {
-        //add cdata node
-        const childNode = new xmlNode(options.cdataTagName, currentNode, tag[3]);
-        childNode.attrsMap = buildAttributesMap(tag[8], options);
-        currentNode.addChild(childNode);
-        //for backtracking
-        currentNode.val = getValue(currentNode.val) + options.cdataPositionChar;
-        //add rest value to parent node
-        if (tag[14]) {
-          currentNode.val += processTagValue(tag, options);
-        }
-      } else {
-        currentNode.val = (currentNode.val || '') + (tag[3] || '') + processTagValue(tag, options);
-      }
     } else if (tagType === TagType.SELF) {
       if (currentNode && tag[14]) {
         currentNode.val = getValue(currentNode.val) + '' + processTagValue(tag, options);
@@ -147,9 +131,7 @@ function processTagValue(parsedTags: any, options: any, parentTagName?: string) 
 }
 
 function checkForTagType(match: any) {
-  if (match[4] === ']]>') {
-    return TagType.CDATA;
-  } else if (match[10] === '/') {
+  if (match[10] === '/') {
     return TagType.CLOSING;
   } else if (typeof match[8] !== 'undefined' && match[8].substr(match[8].length - 1) === '/') {
     return TagType.SELF;

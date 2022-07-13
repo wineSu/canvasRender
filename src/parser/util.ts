@@ -1,5 +1,3 @@
-import {X2jOptionsOptional} from './type';
-
 interface Utils {
   (string: string, regex: RegExp): string[][];
 }

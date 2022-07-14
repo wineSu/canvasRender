@@ -1,4 +1,5 @@
 import Parser from './parser/index';
+import {cssParser} from './cssParser/index';
 
 const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
 const DelStyleTagReg= /(<\/?style.*?>)/gi;
@@ -58,7 +59,8 @@ class CanvasRender {
             parseTrueNumberOnly: false,
         };
         const {style, xml} = this.getTempCont();
-        console.log(Parser(xml, parseConfig, true))
+        const xmlObj = Parser(xml, parseConfig, true);
+        const cssObj = cssParser(style);
     }
 }
 

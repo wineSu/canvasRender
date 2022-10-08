@@ -60,7 +60,9 @@ class CanvasRender {
         };
         const {style, xml} = this.getTempCont();
         const xmlObj = Parser(xml, parseConfig, true);
+        console.log(xmlObj)
         const cssObj = cssParser(style);
+        console.log(cssObj, 111)
     }
 }
 

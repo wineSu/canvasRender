@@ -10,8 +10,7 @@ interface Children {
 }
 
 interface JSONNode {
-  children: Children,
-  attributes: CssAttributes
+  T: any,
 }
 
 type tokenObj = {
@@ -195,7 +194,6 @@ const traverser = (ast: any, visitor: any) => {
 
       case 'IdSelector':
       case 'ClassSelector':
-        console.log(node,9999)
         traverseArray(node.children, node);
         break;
 
@@ -257,9 +255,34 @@ const transformer = (ast: any) => {
 
   // 最后返回创建好的新 AST。
   return newAst;
-}
+};
 
 // 生成目标代码
+const codeGenerator: (node: any) => string = (node) => {
+
+  switch (node.type) {
+    case 'StyleSheet':
+      return `{${node.children.map(codeGenerator).join(',')}}`;
+
+    case 'rule':
+      return (
+        `"${codeGenerator(node.prelude)}": {${codeGenerator(node.block)}}`
+      );
+
+    case 'block':
+        return node.children.map(codeGenerator).join(',');
+
+    case 'Declaration':
+        return `"${node.property}":"${node.value}"`;
+      
+    case 'IdSelector':
+    case 'ClassSelector':
+      return node.name;
+   
+    default:
+      throw new TypeError(node.type);
+  }
+}
 
 /**
  * css -> json 转换
@@ -269,18 +292,11 @@ const transformer = (ast: any) => {
  */
 export const cssParser = (
   cssString: string
-): JSONNode => {
-  const node: JSONNode = {
-    children: {},
-    attributes: {},
-  };
+) => {
   // 去掉注释和空格
   cssString = cssString.replace(commentX, '').trim();
   const ast = parser(tokenizer(cssString));
-  console.log(ast)
   const newAst = transformer(ast);
-
-  console.log(newAst)
-
-  return node;
+  const targetCode = JSON.parse(codeGenerator(newAst));
+  return targetCode;
 };

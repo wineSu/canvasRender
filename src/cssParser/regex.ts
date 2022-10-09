@@ -8,10 +8,6 @@ export const lineAttrX = /([^\:]+):([^\;]*);/;
 // capture.
 export const altX = /(\/\*[\s\S]*?\*\/)|([^\s\;\{\}][^\;\{\}]*(?=\{))|(\})|([^\;\{\}]+\;(?!\s*\*\/))/gim;
 
-
-
-import { altX, commentX, lineAttrX } from './regex';
-
 const capComment = 1;
 const capSelector = 2;
 const capEnd = 3;

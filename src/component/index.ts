@@ -1,2 +1,2 @@
-export {ViewElemnt} from './view';
-export {TextElemnt} from './text';
+export {ViewElement} from './view';
+export {TextElement} from './text';

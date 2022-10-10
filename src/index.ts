@@ -1,13 +1,14 @@
 import Parser from './parser';
 import {cssParser} from './cssParser';
-import {ViewElemnt} from './component';
+import {ViewElement, TextElement} from './component';
 import computeLayout from 'css-layout';
 
 const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
 const DelStyleTagReg= /(<\/?style.*?>)/gi;
 
 const mapElement = {
-    view: ViewElemnt
+    view: ViewElement,
+    text: TextElement
 }
 
 /**
@@ -27,6 +28,8 @@ class CanvasRender {
         this.renderElement(layoutTree);
     }
 
+    ctx: CanvasRenderingContext2D | null
+
     /**
      * 初始化 web根结点
      */
@@ -35,6 +38,7 @@ class CanvasRender {
         document.body.appendChild(canvas);
         canvas.width = document.documentElement.clientWidth;
         canvas.height = document.documentElement.clientHeight;
+        this.ctx = canvas.getContext('2d');
     }
 
     /**
@@ -66,7 +70,6 @@ class CanvasRender {
      * @returns 
      */
     renderTree = (domTree: any, cssTree: any) => {
-        // const _constructor = constructorMap[domTree.name];
         let children = domTree.children || [];
 
         // 递归处理
@@ -80,14 +83,14 @@ class CanvasRender {
                     const attribute = `data-${key}`;
 
                     if (key === 'id' ) {
-                        obj.style = Object.assign(obj.style || {}, cssTree[id] || {})
+                        obj.style = Object.assign(obj.style, cssTree[id] || {})
                         return obj
                     }
 
                     if (key === 'class') {
                         obj.style = value.split(/\s+/).reduce((res: any, oneClass: any) => {
                             return Object.assign(res, cssTree[oneClass])
-                        }, obj.style || {})
+                        }, obj.style)
 
                         return obj
                     }
@@ -102,15 +105,32 @@ class CanvasRender {
                     }
 
                     return obj;
-                }, {});
+                }, {style:{}});
 
             args.idName = id;
             args.className = attr.class || '';
+            
+            // 部分属性继承
+            const {background, color} = domTree.style || {};
+            if(background || color) {
+                args.style = {
+                    background,
+                    color,
+                    ...args.style
+                }
+            }
+
+            if(childNode['#text']) {
+                childNode.children.push({
+                    name: 'text',
+                    style: {},
+                    'data-value': childNode['#text']
+                })
+            }
 
             Object.assign(childNode, args);
             this.renderTree(childNode, cssTree);
         });
-
         return domTree;
     }
 
@@ -153,10 +173,15 @@ class CanvasRender {
     }
 
     /**
-     * 遍历布局树渲染组件
+     * 遍历布局树渲染组件, 追加节点、父子关系
      */
     renderElement = (tree) => {
-        
+        tree.children?.map((child) => {
+            child.parent = tree;
+            const ele = new mapElement[child.name](child);
+            ele.render(this.ctx);
+            this.renderElement(child);
+        })
     }
 }
 

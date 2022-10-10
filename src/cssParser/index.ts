@@ -15,7 +15,7 @@ interface JSONNode {
 
 type tokenObj = {
   type: string,
-  value: string
+  value: string | number
 }
 
 type tokenType = Array<tokenObj>
@@ -103,7 +103,7 @@ const tokenizer = (cssString: string) => {
 
       tokens.push({
         type: 'KEY',
-        value: value
+        value: Number(value) || value
       });
       continue;
     }
@@ -273,7 +273,7 @@ const codeGenerator: (node: any) => string = (node) => {
         return node.children.map(codeGenerator).join(',');
 
     case 'Declaration':
-        return `"${node.property}":"${node.value}"`;
+        return typeof node.value === 'number' ? `"${node.property}":${node.value}` : `"${node.property}":"${node.value}"`;
       
     case 'IdSelector':
     case 'ClassSelector':

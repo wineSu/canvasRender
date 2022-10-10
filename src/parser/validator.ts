@@ -11,7 +11,7 @@ const props = ['allowBooleanAttributes', 'localeRange'];
 export const validate = (xmlData: string, options: X2jOptionsOptional) => {
   options = buildOptions(options, defaultOptions, props);
 
-  const tags = [];
+  const tags: any = [];
   let tagFound = false;
   if (xmlData[0] === '\ufeff') {
     xmlData = xmlData.substr(1);

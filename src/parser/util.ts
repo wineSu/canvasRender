@@ -7,10 +7,10 @@ interface Match {
 }
 
 export const getAllMatches: Utils = function (string: string, regex: RegExp) {
-  const matches = []
+  const matches: any[] = []
   let match = regex.exec(string)
   while (match) {
-    const allmatches = []
+    const allmatches: any[] = [];
     const len = match.length
     for (let index = 0; index < len; index++) {
       allmatches.push(match[index])

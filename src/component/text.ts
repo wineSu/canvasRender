@@ -20,7 +20,6 @@ export class TextElement extends BaseElement {
             ctx.fillRect(left, top, width, height);
         }
 
-        console.log(this.props)
         ctx.font = `${style.fontSize || 40}px "微软雅黑"`;
         ctx.fillStyle = `${style.color || 'black'}`;
         ctx.textBaseline = 'top';
@@ -48,13 +47,12 @@ export class TextElement extends BaseElement {
             } else {
                 if(i === len - 1) {
                     ctx.fillText(
-                        text.substring(startIndex, i),
+                        text.substring(startIndex, i + 1),
                         layout.left,
                         layout.top + line * layout.height + (line > 0 ? 10 : 0)
                     );
                 }
             }
         }
-        console.log(textWidth)
     }
 }

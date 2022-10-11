@@ -1,6 +1,6 @@
 import Parser from './parser';
 import {cssParser} from './cssParser';
-import {ViewElement, TextElement} from './component';
+import {ViewElement, TextElement, ImageElement} from './component';
 import computeLayout from 'css-layout';
 
 const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
@@ -8,7 +8,8 @@ const DelStyleTagReg= /(<\/?style.*?>)/gi;
 
 const mapElement = {
     view: ViewElement,
-    text: TextElement
+    text: TextElement,
+    images: ImageElement
 }
 
 /**

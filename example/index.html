@@ -20,29 +20,35 @@
     <template>
         <style>
             #container {
-                background: red;
+                background: tan;
                 padding: 20;
                 height: 800;
             }
             .redText {
-                color: green;
+                color: bisque;
             }
 
             .rect{
                 marginTop: 10;
-                background: blue;
+                background: cadetblue;
             }
 
             .text{
                 fontSize: 60;
+            }
+            .img{
+                width: 300;
+                height: 300;
             }
         </style>
         <view id="container">
             <view class="rect" attr='1122'>
                 <text class="text" value="222222"></text>
                 这是一段文本，我也不知道从哪里开始换行，开始测试，你知道的，我现在很迷茫，哈哈哈
-            </view >
-            <text id="testText" class="redText" value="hello canvas"> </text>
+            </view>
+            <text id="testText" class="redText" value="hello canvas render"></text>
+            <text id="testText" class="redText" value="这是一张图片"></text>
+            <images class="img" src='./i.png' />
         </view>
     </template>
 </body>

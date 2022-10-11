@@ -12,7 +12,7 @@ const mapElement = {
 }
 
 /**
- * 通过自定义标签+style+canvas 实现一款渲染器，也可以理解为一个超级超级超级简单的“浏览器”
+ * 通过自定义DSL标签+style+canvas 实现一款渲染器，也可以理解为一个超级超级超级简单的“浏览器”
  * 主要目的是为了绘制并渲染一套可交互式的 ui
  * 详见 README.md
  */
@@ -124,7 +124,7 @@ class CanvasRender {
                 childNode.children.push({
                     name: 'text',
                     style: {
-                        height: 20
+                        height: 40,
                     },
                     'data-value': childNode['#text']
                 })
@@ -136,10 +136,33 @@ class CanvasRender {
                 childNode.style.flex = 1;
             }
 
+            if((childNode.name === 'text')) {
+                childNode.style.fontSize = childNode.style.fontSize || 40;
+                childNode.style.height = childNode.style.fontSize;
+            }
+
             this.renderTree(childNode, cssTree);
         });
         return domTree;
     }
+
+    // todo 文字流式布局优化
+    // rawTextLayout = (renderTree) => {
+    //     renderTree.children?.map((child) => {
+    //         if((child.name === 'text')) {
+    //             const text = child['data-value'];
+    //             const row = Math.ceil(text.length / (child.layout.width / child.style.fontSize));
+    //             child.style.height = row * child.style.fontSize;
+    //         }
+    //         delete child.layout;
+    //         delete child.lastLayout;
+    //         delete child.shouldUpdate;
+    //         delete child.lineIndex;
+    //         delete child.nextAbsoluteChild;
+    //         delete child.nextFlexChild;
+    //         this.rawTextLayout(child);
+    //     });
+    // }
 
     /**
      * 布局树
@@ -151,7 +174,9 @@ class CanvasRender {
         renderTree.style = {
             width: document.documentElement.clientWidth
         }
-        computeLayout(renderTree)
+        computeLayout(renderTree);
+        // this.rawTextLayout(renderTree);
+        // computeLayout(renderTree);
         return renderTree;
     }
 

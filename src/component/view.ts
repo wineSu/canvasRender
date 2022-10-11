@@ -1,10 +1,13 @@
-export class ViewElement {
+import {BaseElement} from './base';
+
+/**
+ * 盒子绘制
+ */
+export class ViewElement extends BaseElement{
     constructor(props) {
-        this.props = props;
+        super(props)
     }
 
-    props: any
-    
     render = (ctx) => {
         const {layout, style} = this.props;
         const {left, right, top, bottom, width, height} = layout;

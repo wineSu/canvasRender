@@ -25,16 +25,23 @@
                 height: 800;
             }
             .redText {
-                color: blue;
+                color: green;
             }
 
             .rect{
                 marginTop: 10;
                 background: blue;
             }
+
+            .text{
+                fontSize: 60;
+            }
         </style>
         <view id="container">
-            <view class="rect" attr='1122'>2222</view >
+            <view class="rect" attr='1122'>
+                <text class="text" value="222222"></text>
+                这是一段文本，我也不知道从哪里开始换行，开始测试，你知道的，我现在很迷茫，哈哈哈
+            </view >
             <text id="testText" class="redText" value="hello canvas"> </text>
         </view>
     </template>

@@ -105,11 +105,11 @@ class CanvasRender {
                     }
 
                     return obj;
-                }, {style:{}});
+                }, {style:childNode.style || {}});
 
             args.idName = id;
             args.className = attr.class || '';
-            
+
             // 部分属性继承
             const {background, color} = domTree.style || {};
             if(background || color) {
@@ -123,12 +123,19 @@ class CanvasRender {
             if(childNode['#text']) {
                 childNode.children.push({
                     name: 'text',
-                    style: {},
+                    style: {
+                        height: 20
+                    },
                     'data-value': childNode['#text']
                 })
             }
 
             Object.assign(childNode, args);
+
+            if((childNode.name === 'view')) {
+                childNode.style.flex = 1;
+            }
+
             this.renderTree(childNode, cssTree);
         });
         return domTree;
@@ -140,6 +147,10 @@ class CanvasRender {
      * @returns 
      */
     layoutTree = (renderTree) => {
+        // 修正下最外部盒子宽度，方便后续子元素 flex 设置
+        renderTree.style = {
+            width: document.documentElement.clientWidth
+        }
         computeLayout(renderTree)
         return renderTree;
     }

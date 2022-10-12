@@ -169,12 +169,8 @@ class CanvasRender {
 
             Object.assign(childNode, args);
 
-            if((childNode.name === 'view')) {
-                childNode.style.flex = 1;
-            }
-
             if((childNode.name === 'text')) {
-                childNode.style.fontSize = childNode.style.fontSize || 40;
+                childNode.style.fontSize = childNode.style.fontSize || domTree.style.fontSize ||40;
                 childNode.style.height = childNode.style.fontSize;
             }
 
@@ -279,9 +275,7 @@ class CanvasRender {
      * @param cssobj 
      */
     setStyle = (child, cssobj) => {
-        console.log(1111)
         schedule(() => {
-            console.log(22222)
             Object.assign(child.style, cssobj)
             this.repaintRender();
         });

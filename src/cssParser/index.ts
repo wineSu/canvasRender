@@ -22,7 +22,7 @@ type tokenType = Array<tokenObj>
 
 const commentX: RegExp = /\/\*[\s\S]*?\*\//g;
 const WHITESPACE = /\s/;
-const LETTERS = /[a-z0-9]/i;
+const LETTERS = /[a-z0-9-]/i;
 
 // token 创建
 const tokenizer = (cssString: string) => {
@@ -76,7 +76,7 @@ const tokenizer = (cssString: string) => {
 
     if (char === ':') {
       tokens.push({
-        type: 'CONECT',
+        type: 'MARKS',
         value: ':'
       });
       current++;
@@ -135,7 +135,7 @@ const parser = (tokens: tokenType) => {
       };
     }
 
-    if (token.type === 'CONECT') {
+    if (token.type === 'MARKS') {
       return {
         type: 'StyleText',
         name: tokens[current - 1].value,

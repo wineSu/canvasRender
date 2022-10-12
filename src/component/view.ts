@@ -10,7 +10,9 @@ export class ViewElement extends BaseElement{
 
     render = (ctx) => {
         const {layout, style} = this.props;
+        
         const {left, right, top, bottom, width, height} = layout;
+    
         ctx.clearRect(left, top, width, height);
         ctx.save();
 

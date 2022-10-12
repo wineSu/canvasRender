@@ -20,35 +20,71 @@
     <template>
         <style>
             #container {
-                background: tan;
-                padding: 20;
-                height: 800;
+                background: honeydew;
+                height: 1800;
             }
-            .redText {
-                color: bisque;
+            .head {
+                flexDirection: row;
+                justifyContent: space-between;
+                alignItems: center;
+                height: 150;
+                background: white;
+                fontSize: 34;
             }
-
-            .rect{
+            .logo {
+                width: 300;
+                height: 150;
+            }
+            .icon{
+                width: 120;
+                color: lightskyblue;
+            }
+            .textRight {
+                width: 220;
                 marginTop: 10;
-                background: cadetblue;
-            }
-
-            .text{
-                fontSize: 60;
+                color: white;
             }
             .img{
+                height: 460;
+            }
+            .cont{
+                flexDirection: row;
+                justifyContent: space-around;
+                padding: 20;
+                flexWrap: wrap;
+            }
+            .list{
+                background: khaki;
                 width: 300;
-                height: 300;
+                height: 350;
+                marginBottom: 20;
+                marginTop: 20;
+            }
+            .foot{
+                marginTop: 100;
+                height: 220;
+                background: darkslategrey;
+                justifyContent: center;
+                alignItems: center;
             }
         </style>
         <view id="container">
-            <view class="rect" attr='1122'>
-                <text class="text" value="222222"></text>
-                这是一段文本，我也不知道从哪里开始换行，开始测试，你知道的，我现在很迷茫，哈哈哈
+            <view class="head">
+                <images class="logo" src='./logo.png' ></images>
+                <text class="icon" value="|||👀"></text>
             </view>
-            <text id="testText" class="redText" value="hello canvas render"></text>
-            <text id="testText" class="redText" value="这是一张图片"></text>
-            <images class="img" src='./i.png' />
+            <images class="img" src='./i.png' ></images>
+            <view class="cont">
+                <view class="list">1</view>
+                <view class="list">2</view>
+                <view class="list">3</view>
+                <view class="list">1</view>
+                <view class="list">2</view>
+                <view class="list">3</view>
+            </view>
+            <view class="foot">
+                <text class="textRight" value="底部文案区域"></text>
+            </view>
         </view>
     </template>
 </body>
@@ -57,18 +93,18 @@
 <script>
     setTimeout(() => {
         const idSel = canvasRender.getElementsById('container')[0];
-        idSel.setStyle({
-            background: 'red',
-            height: 1200
-        });
-        idSel.setStyle({
-            background: 'blue',
-            height: 1600
-        });
-        idSel.setStyle({
-            background: 'green',
-            height: 1800
-        });
+        // idSel.setStyle({
+        //     background: 'red',
+        //     height: 1200
+        // });
+        // idSel.setStyle({
+        //     background: 'blue',
+        //     height: 1600
+        // });
+        // idSel.setStyle({
+        //     background: 'green',
+        //     height: 1800
+        // });
     }, 1000)
 </script>
 </html>

@@ -7,11 +7,16 @@ export class BaseElement {
     constructor(props) {
         this.props = props;
 
-        const {layout} = this.props;
+        const {layout, style, parent} = this.props;
         let {left, top} = layout;
 
         // padding 计算误差校正
-        layout.left = left + this.props.parent.layout.left;
-        layout.top = top + this.props.parent.layout.top;
+        layout.left = left + parent.layout.left;
+        layout.top = top + parent.layout.top;
+
+        // 定位校正宽度
+        if(style.position === 'absolute') {
+            layout.width = parent.layout.width;
+        }
     }
 }

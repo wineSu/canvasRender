@@ -11,7 +11,7 @@ export class TextElement extends BaseElement {
     render = (ctx) => {
         const {layout, style} = this.props;
         let {left, right, top, bottom, width, height} = layout;
-    
+
         ctx.clearRect(left, top, width, height);
         ctx.save();
 

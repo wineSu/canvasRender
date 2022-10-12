@@ -54,5 +54,21 @@
 </body>
 
 <script src="../dist/index.js"></script>
-
+<script>
+    setTimeout(() => {
+        const idSel = canvasRender.getElementsById('container')[0];
+        idSel.setStyle({
+            background: 'red',
+            height: 1200
+        });
+        idSel.setStyle({
+            background: 'blue',
+            height: 1600
+        });
+        idSel.setStyle({
+            background: 'green',
+            height: 1800
+        });
+    }, 1000)
+</script>
 </html>

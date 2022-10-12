@@ -2,6 +2,8 @@ import Parser from './parser';
 import {cssParser} from './cssParser';
 import {ViewElement, TextElement, ImageElement} from './component';
 import computeLayout from 'css-layout';
+import {_getElementsById, _getElementsByClassName} from './api';
+import {schedule} from './schedule';
 
 const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
 const DelStyleTagReg= /(<\/?style.*?>)/gi;
@@ -22,14 +24,12 @@ class CanvasRender {
         this.init();
         const {xmlObj, cssObj} = this.parse();
         // 渲染树
-        const renderTree = this.renderTree(xmlObj, cssObj);
-        // 计算布局树 利用 css-layout(yoga) 布局引擎
-        const layoutTree = this.layoutTree(renderTree);
-        // 拿到布局树中间结构后，利用 canvas api 绘制不同组件，也可以迁移至其他平台绘制
-        this.renderElement(layoutTree);
+        this.tree = this.renderTree(xmlObj, cssObj);
+        this.initRender();
     }
 
     ctx: CanvasRenderingContext2D | null
+    tree: any
 
     /**
      * 初始化 web根结点
@@ -51,6 +51,7 @@ class CanvasRender {
         const div: HTMLElement = document.createElement('tempDiv');
         div.appendChild( temp.content );
         const cont = div.innerHTML;
+        // todo 增加script解析，实现一套渲染钩子
         div.parentNode?.removeChild(div);
         // 将style和xml拆分开
         const res = {
@@ -62,6 +63,41 @@ class CanvasRender {
             return '';
         });
         return res;
+    }
+
+    /**
+     * 初始绘制
+     */
+    initRender = () => {
+        // 计算布局树 利用 css-layout(yoga) 布局引擎
+        const layoutTree = this.layoutTree(this.tree);
+        // 拿到布局树中间结构后，利用 canvas api 绘制不同组件，也可以迁移至其他平台绘制
+        this.renderElement(layoutTree);
+    }
+
+    /**
+     * 重绘 & 回流
+     */
+    repaintRender = () => {
+        this.resetLayoutData(this.tree);
+        this.initRender();
+    }
+
+    /**
+     * layout 数据重置，再次计算布局树
+     * @param renderTree 
+     */
+    resetLayoutData = (renderTree) => {
+        delete renderTree.layout;
+        delete renderTree.lastLayout;
+        delete renderTree.shouldUpdate;
+        delete renderTree.lineIndex;
+        delete renderTree.nextAbsoluteChild;
+        delete renderTree.nextFlexChild;
+        renderTree.children?.map((child) => {
+            this.resetLayoutData(child);
+        });
+        return renderTree;
     }
 
     /**
@@ -215,11 +251,44 @@ class CanvasRender {
     renderElement = (tree) => {
         tree.children?.map((child) => {
             child.parent = tree;
+            // const newStyle = new Proxy(child.style, {
+            //     get: (target, key) => {
+            //     //   console.log(`监听到${target}对象的${String(key)}属性被访问了`, target)
+            //         return Reflect.get(target, key);
+            //     },
+            //     set: (target, key, newValue) => {
+            //         console.log(`监听到${child.attr.id || child.attr.class}对象的${String(key)}属性被设置值${newValue}`, target);
+            //         // 设置值重新渲染，后续需要区分是重绘还是回流，重绘无需重新计算布局，只调用对应组件的render即可
+            //         target[key] = newValue;
+            //         this.repaintRender();
+            //         // child.render(this.ctx);
+            //         return Reflect.set(target, key, newValue);
+            //     }
+            // });
+            // child.style = newStyle;
             const ele = new mapElement[child.name](child);
             ele.render(this.ctx);
+            child.setStyle = (cssobj) => {this.setStyle(child, cssobj)};
             this.renderElement(child);
         })
     }
+
+    setStyle = (child, cssobj) => {
+        console.log(1111)
+        schedule(() => {
+            console.log(22222)
+            Object.assign(child.style, cssobj)
+            this.repaintRender();
+        });
+    }
+
+    getElementsById = (id) => {
+        return _getElementsById(this.tree, [], id);
+    }
+    
+    getElementsByClassName = (className) => {
+        return _getElementsByClassName(this.tree, [], className);
+    }
 }
 
-new CanvasRender();
+(window as any).canvasRender = new CanvasRender();

@@ -22,7 +22,7 @@ type tokenType = Array<tokenObj>
 
 const commentX: RegExp = /\/\*[\s\S]*?\*\//g;
 const WHITESPACE = /\s/;
-const LETTERS = /[a-z0-9-]/i;
+const LETTERS = /[a-z0-9-#]/i;
 
 // token 创建
 const tokenizer = (cssString: string) => {
@@ -33,7 +33,7 @@ const tokenizer = (cssString: string) => {
   while (current < len) {
     let char = cssString[current];
 
-    if (char === '#') {
+    if (char === '#' && (cssString[current - 2] !== ':')) {
       tokens.push({
         type: 'ID',
         value: '#'

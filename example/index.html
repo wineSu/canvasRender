@@ -21,14 +21,13 @@
         <style>
             #container {
                 background: honeydew;
-                height: 1800;
             }
             .head {
                 flexDirection: row;
                 justifyContent: space-between;
                 alignItems: center;
                 height: 150;
-                background: white;
+                background: #fff;
                 fontSize: 34;
             }
             .logo {
@@ -39,51 +38,107 @@
                 width: 120;
                 color: lightskyblue;
             }
+            .infor {
+                height: 240;
+                background: #dfe4e9;
+                justifyContent: center;
+                alignItems: center;
+            }
+            .title{
+                width: 260;
+                color: #212223;
+            }
+            .desc{
+                width: 290;
+                fontSize: 30;
+                marginTop: 20;
+                color: #787b7e;
+            }
             .textRight {
-                width: 220;
-                marginTop: 10;
+                width: 280;
                 color: white;
             }
             .img{
-                height: 460;
+                height: 350;
             }
             .cont{
                 flexDirection: row;
                 justifyContent: space-around;
                 padding: 20;
                 flexWrap: wrap;
+                background: #20273a;
             }
             .list{
-                background: khaki;
                 width: 300;
                 height: 350;
-                marginBottom: 20;
-                marginTop: 20;
-            }
-            .foot{
-                marginTop: 100;
-                height: 220;
-                background: darkslategrey;
+                color: #fff;
                 justifyContent: center;
                 alignItems: center;
             }
+            .foot{
+                height: 100;
+                width: 560;
+                borderRadius: 50;
+                background: #3d6fff;
+                justifyContent: center;
+                alignItems: center;
+                alignSelf: center;
+                fontSize: 30;
+                marginBottom: 30;
+            }
+            .map {
+                height: 500;
+            }
+
+            .listImg{
+                width: 150;
+                height: 180;
+            }
+            .listTitle {
+                width: 140;
+                fontSize: 38;
+            }
+
+            .listDesc {
+                marginTop: 20;
+                width: 180;
+                fontSize: 22;
+                color: #a4a7b0;
+            }
+            
         </style>
         <view id="container">
             <view class="head">
                 <images class="logo" src='./logo.png' ></images>
                 <text class="icon" value="|||👀"></text>
             </view>
-            <images class="img" src='./i.png' ></images>
+            <images class="img" src='./travel.jpg' ></images>
+            <view class="infor">
+                <text class="title" value="出行解决方案"></text>
+                <text class="desc" value="一站式解决行业痛点"></text>
+            </view>
             <view class="cont">
-                <view class="list">1</view>
-                <view class="list">2</view>
-                <view class="list">3</view>
-                <view class="list">1</view>
-                <view class="list">2</view>
-                <view class="list">3</view>
+                <view class="list">
+                    <images class="listImg" src='./1.jpg' ></images>
+                    <text class="listTitle" value="9000亿"></text>
+                    <text class="listDesc" value="使用高德位置服务"></text>
+                </view>
+                <view class="list">
+                    <images class="listImg" src='./1.jpg' ></images>
+                    <text class="listTitle" value="800亿"></text>
+                    <text class="listDesc" value="使用高德位置服务"></text>
+                </view>
+                <view class="list">
+                    <images class="listImg" src='./1.jpg' ></images>
+                    <text class="listTitle" value="100亿"></text>
+                    <text class="listDesc" value="使用高德位置服务"></text>
+                </view>
+            </view>
+            <view class="map">
+                一会绘制地图
             </view>
             <view class="foot">
-                <text class="textRight" value="底部文案区域"></text>
+                <text class="textRight" value="高德地图，哪都熟！"></text>
             </view>
         </view>
     </template>

@@ -273,6 +273,11 @@ class CanvasRender {
         })
     }
 
+    /**
+     * 样式外部设置
+     * @param child 
+     * @param cssobj 
+     */
     setStyle = (child, cssobj) => {
         console.log(1111)
         schedule(() => {
@@ -282,10 +287,20 @@ class CanvasRender {
         });
     }
 
+    /**
+     * id 选择
+     * @param id 
+     * @returns 
+     */
     getElementsById = (id) => {
         return _getElementsById(this.tree, [], id);
     }
     
+    /**
+     * class 选择
+     * @param className 
+     * @returns 
+     */
     getElementsByClassName = (className) => {
         return _getElementsByClassName(this.tree, [], className);
     }

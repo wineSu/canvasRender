@@ -2,7 +2,7 @@ import Parser from './parser';
 import {cssParser} from './cssParser';
 import {ViewElement, TextElement, ImageElement} from './component';
 import computeLayout from 'css-layout';
-import {_getElementsById, _getElementsByClassName} from './api';
+import {_getElementsById, _getElementsByClassName, isClick} from './api';
 import {schedule} from './schedule';
 
 const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
@@ -25,11 +25,17 @@ class CanvasRender {
         const {xmlObj, cssObj} = this.parse();
         // 渲染树
         this.tree = this.renderTree(xmlObj, cssObj);
+        this.touchMsg = {};
         this.initRender();
     }
 
     ctx: CanvasRenderingContext2D | null
     tree: any
+
+    // 事件相关
+    touchStart: (e: any) => void
+    touchEnd: (e: any) => void
+    touchMsg: any
 
     /**
      * 初始化 web根结点
@@ -40,6 +46,9 @@ class CanvasRender {
         canvas.width = document.documentElement.clientWidth;
         canvas.height = document.documentElement.clientHeight;
         this.ctx = canvas.getContext('2d');
+
+        this.touchStart = this.eventHandler('touchstart');
+        this.touchEnd = this.eventHandler('touchend');
     }
 
     /**
@@ -73,6 +82,8 @@ class CanvasRender {
         const layoutTree = this.layoutTree(this.tree);
         // 拿到布局树中间结构后，利用 canvas api 绘制不同组件，也可以迁移至其他平台绘制
         this.renderElement(layoutTree);
+
+        this.bindEvents();
     }
 
     /**
@@ -265,6 +276,10 @@ class CanvasRender {
             const ele = new mapElement[child.name](child);
             ele.render(this.ctx);
             child.setStyle = (cssobj) => {this.setStyle(child, cssobj)};
+            child.eventsFrie = ele.eventFrie;
+            child.on = (name, callback) => {
+                ele[name] = callback;
+            }
             this.renderElement(child);
         })
     }
@@ -297,6 +312,67 @@ class CanvasRender {
      */
     getElementsByClassName = (className) => {
         return _getElementsByClassName(this.tree, [], className);
+    }
+
+    getChildByPos(tree, x, y, itemList) {
+        let list = Object.keys(tree.children);
+    
+        for ( let i = 0; i < list.length;i++ ) {
+            const child = tree.children[list[i]];
+            const {left: X, top: Y, width, height} = child.layout;
+
+            if (( X <= x && x <= X + width)
+                && ( Y <= y && y <= Y + height ) ) {
+                if ( Object.keys(child.children).length ) {
+                    this.getChildByPos(child, x, y, itemList);
+                } else {
+                    itemList.push(child);
+                }
+            }
+        }
+    }
+
+    eventHandler(eventName) {
+        return (e) => {
+        
+            const touch = (e.touches && e.touches[0]) || e;
+            if ( !touch || !touch.pageX || !touch.pageY ) {
+                return;
+            }
+        
+            if ( !touch.timeStamp )  {
+                touch.timeStamp = e.timeStamp;
+            }
+        
+            const list: any[] = [];
+            if (touch) {
+                this.getChildByPos(this.tree, touch.pageX, touch.pageY, list);
+            }
+
+            if (!list.length) {
+                list.push(this.tree);
+            }
+            const item = list[list.length - 1];
+            
+            if ( eventName === 'touchstart' || eventName === 'touchend' ) {
+                this.touchMsg[eventName] = touch;
+            }
+        
+            if ( eventName === 'touchend' && isClick(this.touchMsg) && item) {
+                item.eventsFrie?.(e);
+            }
+        }
+    }
+
+    /**
+     * 事件绑定
+     * @returns 
+     */
+    bindEvents() {
+        document.onmousedown  = this.touchStart;
+        // document.onmousemove  = this.touchMove;
+        document.onmouseup    = this.touchEnd;
+        document.onmouseleave = this.touchEnd;
     }
 }
 

@@ -45,12 +45,13 @@
                 alignItems: center;
             }
             .title{
-                width: 260;
+                fontSize: 46;
+                width: 280;
                 color: #212223;
             }
             .desc{
-                width: 290;
-                fontSize: 30;
+                width: 240;
+                fontSize: 26;
                 marginTop: 20;
                 color: #787b7e;
             }
@@ -117,28 +118,28 @@
                 <text class="title" value="出行解决方案"></text>
                 <text class="desc" value="一站式解决行业痛点"></text>
             </view>
-            <view class="cont">
-                <view class="list">
-                    <images class="listImg" src='./1.jpg' ></images>
-                    <text class="listTitle" value="9000亿"></text>
-                    <text class="listDesc" value="使用高德位置服务"></text>
-                </view>
-                <view class="list">
-                    <images class="listImg" src='./1.jpg' ></images>
-                    <text class="listTitle" value="800亿"></text>
-                    <text class="listDesc" value="使用高德位置服务"></text>
-                </view>
-                <view class="list">
-                    <images class="listImg" src='./1.jpg' ></images>
-                    <text class="listTitle" value="100亿"></text>
-                    <text class="listDesc" value="使用高德位置服务"></text>
-                </view>
-            </view>
             <view class="map">
                 一会绘制地图
             </view>
-            <view class="foot">
+            <view class="foot" id="btn">
                 <text class="textRight" value="高德地图，哪都熟！"></text>
+            </view>
+            <view class="cont">
+                <view class="list">
+                    <images class="listImg" src='./1.jpg' ></images>
+                    <text class="listTitle" value="7000亿"></text>
+                    <text class="listDesc" value="使用高德位置服务"></text>
+                </view>
+                <view class="list">
+                    <images class="listImg" src='./1.jpg' ></images>
+                    <text class="listTitle" value="8000亿"></text>
+                    <text class="listDesc" value="使用高德位置服务"></text>
+                </view>
+                <view class="list">
+                    <images class="listImg" src='./1.jpg' ></images>
+                    <text class="listTitle" value="9999亿"></text>
+                    <text class="listDesc" value="使用高德位置服务"></text>
+                </view>
             </view>
         </view>
     </template>
@@ -147,7 +148,12 @@
 <script src="../dist/index.js"></script>
 <script>
     setTimeout(() => {
-        const idSel = canvasRender.getElementsById('container')[0];
+        const idSel = canvasRender.getElementsById('btn')[0];
+        idSel.click = (e) => {
+            console.log(e, 111)
+        }
+
+        console.log(idSel)
         // idSel.setStyle({
         //     background: 'red',
         //     height: 1200

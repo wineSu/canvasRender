@@ -19,4 +19,13 @@ export class BaseElement {
             layout.width = parent.layout.width;
         }
     }
+
+    eventFrie = (e) => {
+        this.props.click?.(e);
+        let p = this.props;
+        while(p.parent) {
+            p = p.parent;
+            p.click?.(this.props);
+        }
+    }
 }

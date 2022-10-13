@@ -30,3 +30,33 @@ export function _getElementsByClassName(tree, list = [] as any, className) {
   
     return list;
 }
+
+export function isClick(touchMsg) {
+    const start= touchMsg.touchstart;
+    const end = touchMsg.touchend;
+  
+    if (!start
+      || !end
+      || !start.timeStamp
+      || !end.timeStamp
+      || start.pageX === undefined
+      || start.pageY === undefined
+      || end.pageX === undefined
+      || end.pageY === undefined
+    ) {
+      return false;
+    }
+  
+    const startPosX = start.pageX;
+    const startPosY = start.pageY;
+  
+    const endPosX   = end.pageX;
+    const endPosY   = end.pageY;
+  
+    const touchTimes = end.timeStamp - start.timeStamp;
+  
+    return !!(Math.abs(endPosY - startPosY) < 30
+      && Math.abs(endPosX - startPosX) < 30
+      && touchTimes < 300);
+  }
+  

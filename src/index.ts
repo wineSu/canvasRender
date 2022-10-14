@@ -4,6 +4,7 @@ import {ViewElement, TextElement, ImageElement, MapElement} from './component';
 import computeLayout from 'css-layout';
 import {_getElementsById, _getElementsByClassName, isClick} from './api';
 import {schedule} from './schedule';
+import {shallowEqual} from './util';
 
 const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
 const DelStyleTagReg= /(<\/?style.*?>)/gi;
@@ -13,26 +14,6 @@ const mapElement = {
     text: TextElement,
     images: ImageElement,
     map: MapElement
-}
-
-function shallowEqual(object1, object2) {
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-
-    console.log(object1, object2)
-  
-    if (keys1.length !== keys2.length) {
-      return false;
-    }
-  
-    for (let index = 0; index < keys1.length; index++) {
-      const val1 = object1[keys1[index]];
-      const val2 = object2[keys2[index]];
-      if (val1 !== val2) {
-        return false;
-      }
-    }
-    return true;
 }
 
 /**

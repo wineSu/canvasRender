@@ -122,3 +122,21 @@ export const getTileUrlPro = (x, y, z, url, {transformXYZ, getTileUrl} = ({} as 
 }
 
 export const KEY = '0913a20b5d5a703b920e1ff0d9d26559'
+
+export function shallowEqual(object1, object2) {
+    const keys1: string[] = Object.keys(object1);
+    const keys2: string[] = Object.keys(object2);
+
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+  
+    for (let index = 0; index < keys1.length; index++) {
+      const val1 = object1[keys1[index]];
+      const val2 = object2[keys2[index]];
+      if (val1 !== val2) {
+        return false;
+      }
+    }
+    return true;
+}

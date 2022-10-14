@@ -1,6 +1,6 @@
 import Parser from './parser';
 import {cssParser} from './cssParser';
-import {ViewElement, TextElement, ImageElement} from './component';
+import {ViewElement, TextElement, ImageElement, MapElement} from './component';
 import computeLayout from 'css-layout';
 import {_getElementsById, _getElementsByClassName, isClick} from './api';
 import {schedule} from './schedule';
@@ -11,7 +11,8 @@ const DelStyleTagReg= /(<\/?style.*?>)/gi;
 const mapElement = {
     view: ViewElement,
     text: TextElement,
-    images: ImageElement
+    images: ImageElement,
+    map: MapElement
 }
 
 /**
@@ -35,6 +36,7 @@ class CanvasRender {
     // 事件相关
     touchStart: (e: any) => void
     touchEnd: (e: any) => void
+    touchMove: (e: any) => void
     touchMsg: any
 
     /**
@@ -49,6 +51,7 @@ class CanvasRender {
 
         this.touchStart = this.eventHandler('touchstart');
         this.touchEnd = this.eventHandler('touchend');
+        this.touchMove = this.eventHandler('touchmove');
     }
 
     /**
@@ -278,7 +281,7 @@ class CanvasRender {
             child.setStyle = (cssobj) => {this.setStyle(child, cssobj)};
             child.eventsFrie = ele.eventFrie;
             child.on = (name, callback) => {
-                ele[name] = callback;
+                child[name] = callback;
             }
             this.renderElement(child);
         })
@@ -290,8 +293,9 @@ class CanvasRender {
      * @param cssobj 
      */
     setStyle = (child, cssobj) => {
+        Object.assign(child.style, cssobj)
+        // 批量更新
         schedule(() => {
-            Object.assign(child.style, cssobj)
             this.repaintRender();
         });
     }
@@ -321,25 +325,23 @@ class CanvasRender {
             const child = tree.children[list[i]];
             const {left: X, top: Y, width, height} = child.layout;
 
-            if (( X <= x && x <= X + width)
-                && ( Y <= y && y <= Y + height ) ) {
+            if (( X <= x && x <= X + width) && ( Y <= y && y <= Y + height )) {
+                itemList.push(child);
                 if ( Object.keys(child.children).length ) {
                     this.getChildByPos(child, x, y, itemList);
-                } else {
-                    itemList.push(child);
-                }
+                } 
             }
         }
     }
 
     eventHandler(eventName) {
         return (e) => {
-        
             const touch = (e.touches && e.touches[0]) || e;
+
             if ( !touch || !touch.pageX || !touch.pageY ) {
                 return;
             }
-        
+
             if ( !touch.timeStamp )  {
                 touch.timeStamp = e.timeStamp;
             }
@@ -352,14 +354,14 @@ class CanvasRender {
             if (!list.length) {
                 list.push(this.tree);
             }
+
             const item = list[list.length - 1];
-            
             if ( eventName === 'touchstart' || eventName === 'touchend' ) {
                 this.touchMsg[eventName] = touch;
             }
-        
+            
             if ( eventName === 'touchend' && isClick(this.touchMsg) && item) {
-                item.eventsFrie?.(e);
+                item.eventsFrie?.(e, eventName);
             }
         }
     }
@@ -370,7 +372,7 @@ class CanvasRender {
      */
     bindEvents() {
         document.onmousedown  = this.touchStart;
-        // document.onmousemove  = this.touchMove;
+        document.ontouchmove  = this.touchMove;
         document.onmouseup    = this.touchEnd;
         document.onmouseleave = this.touchEnd;
     }

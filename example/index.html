@@ -89,6 +89,11 @@
             }
             .map {
                 height: 500;
+                background: lightskyblue;
+            }
+
+            .mapCont {
+                height: 500;
             }
 
             .listImg{
@@ -118,8 +123,8 @@
                 <text class="title" value="出行解决方案"></text>
                 <text class="desc" value="一站式解决行业痛点"></text>
             </view>
-            <view class="map">
-                一会绘制地图
+            <view class="mapCont">
+                <map class="map" id="map"></map>
             </view>
             <view class="foot" id="btn">
                 <text class="textRight" value="高德地图，哪都熟！"></text>
@@ -147,25 +152,47 @@
 
 <script src="../dist/index.js"></script>
 <script>
+
+    function randomColor(num) {
+		if(!num){
+			var color = "";
+			for (var i = 0; i < 6; i++) {
+				color += (Math.random() * 16 | 0).toString(16);
+			}
+			return "#" + color;
+		}
+		if (num == 1) {
+			return '#' +
+				(function(color) {
+					return (color += '5678956789defdef' [Math.floor(Math.random() * 16)]) &&
+						(color.length == 6) ? color : arguments.callee(color);
+				})('');
+		} else if (num == 2) {
+			return '#' +
+				(function(color) {
+					return (color += '0123401234abcabc' [Math.floor(Math.random() * 16)]) &&
+						(color.length == 6) ? color : arguments.callee(color);
+				})('');
+		}
+	}
+    
     setTimeout(() => {
         const idSel = canvasRender.getElementsById('btn')[0];
-        idSel.click = (e) => {
-            console.log(e, 111)
-        }
+        idSel.on('touchend', () => {
+            const color = randomColor(2);
+            idSel.setStyle({
+                background: color,
+            });
+            idSel.children[0].setStyle({
+                background: color,
+                color: randomColor(1)
+            });
+        })
 
-        console.log(idSel)
-        // idSel.setStyle({
-        //     background: 'red',
-        //     height: 1200
-        // });
-        // idSel.setStyle({
-        //     background: 'blue',
-        //     height: 1600
-        // });
-        // idSel.setStyle({
-        //     background: 'green',
-        //     height: 1800
-        // });
-    }, 1000)
+        const mapcont = canvasRender.getElementsById('map')[0];
+        mapcont.on('touchmove', () => {
+            console.log(1111)
+        })
+    })
 </script>
 </html>

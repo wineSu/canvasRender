@@ -20,12 +20,13 @@ export class BaseElement {
         }
     }
 
-    eventFrie = (e) => {
-        this.props.click?.(e);
+    eventFrie = (e, eventName) => {
+        console.log(this.props, eventName)
+        this.props[eventName]?.(e);
         let p = this.props;
         while(p.parent) {
             p = p.parent;
-            p.click?.(this.props);
+            p[eventName]?.(this.props);
         }
     }
 }

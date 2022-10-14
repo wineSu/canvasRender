@@ -4,6 +4,7 @@ import {BaseElement} from './base';
  * 图片绘制
  */
 export class ImageElement extends BaseElement {
+
     constructor(props) {
         super(props);
     }
@@ -23,7 +24,7 @@ export class ImageElement extends BaseElement {
     }
 
     loadImg = (src, fn) => {
-        const image = new Image();
+        const image: HTMLImageElement = new Image();
         image.src = src;
         image.onload = () => {
             fn(image)

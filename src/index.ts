@@ -15,6 +15,26 @@ const mapElement = {
     map: MapElement
 }
 
+function shallowEqual(object1, object2) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+
+    console.log(object1, object2)
+  
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+  
+    for (let index = 0; index < keys1.length; index++) {
+      const val1 = object1[keys1[index]];
+      const val2 = object2[keys2[index]];
+      if (val1 !== val2) {
+        return false;
+      }
+    }
+    return true;
+}
+
 /**
  * 通过自定义DSL标签+style+canvas 实现一款渲染器，也可以理解为一个超级超级超级简单的“浏览器”
  * 主要目的是为了绘制并渲染一套可交互式的 ui
@@ -27,7 +47,7 @@ class CanvasRender {
         // 渲染树
         this.tree = this.renderTree(xmlObj, cssObj);
         this.touchMsg = {};
-        this.initRender();
+        this.initRender(true);
     }
 
     ctx: CanvasRenderingContext2D | null
@@ -80,13 +100,13 @@ class CanvasRender {
     /**
      * 初始绘制
      */
-    initRender = () => {
+    initRender = (frist) => {
         // 计算布局树 利用 css-layout(yoga) 布局引擎
         const layoutTree = this.layoutTree(this.tree);
         // 拿到布局树中间结构后，利用 canvas api 绘制不同组件，也可以迁移至其他平台绘制
         this.renderElement(layoutTree);
 
-        this.bindEvents();
+        frist && this.bindEvents();
     }
 
     /**
@@ -94,7 +114,7 @@ class CanvasRender {
      */
     repaintRender = () => {
         this.resetLayoutData(this.tree);
-        this.initRender();
+        this.initRender(false);
     }
 
     /**
@@ -276,15 +296,37 @@ class CanvasRender {
             //     }
             // });
             // child.style = newStyle;
-            const ele = new mapElement[child.name](child);
-            ele.render(this.ctx);
-            child.setStyle = (cssobj) => {this.setStyle(child, cssobj)};
-            child.eventsFrie = ele.eventFrie;
-            child.on = (name, callback) => {
-                child[name] = callback;
+            if(!child.ele || this.shouldUpdate(child)) {
+                const ele = new mapElement[child.name](child);
+                ele.render(this.ctx);
+                child.setStyle = (cssobj) => {this.setStyle(child, cssobj)};
+                child.eventsFrie = ele.eventFrie;
+                child.on = (name, callback) => {
+                    child[name] = callback;
+                }
+                child.ele = ele;
             }
             this.renderElement(child);
         })
+    }
+
+    shouldUpdate = (child) => {
+        // 初次渲染
+        if(!child.ele) {
+            return true;
+        }
+
+        const {layout, style} = child;
+        const cache = child.ele.cache;
+
+        if(shallowEqual({
+            ...layout,
+            ...style
+        }, cache)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

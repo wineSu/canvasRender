@@ -4,14 +4,23 @@
 export class BaseElement {
     props: any
 
+    cache: any
+
     constructor(props) {
         this.props = props;
 
         const {layout, style, parent} = this.props;
+
+        this.cache = {
+            ...layout,
+            ...style
+        }
+
+
         let {left, top} = layout;
 
         // padding 计算误差校正
-        layout.left = left + parent.layout.left;
+        layout.left = Math.floor(left + parent.layout.left);
         layout.top = top + parent.layout.top;
 
         // 定位校正宽度
@@ -21,7 +30,6 @@ export class BaseElement {
     }
 
     eventFrie = (e, eventName) => {
-        console.log(this.props, eventName)
         this.props[eventName]?.(e);
         let p = this.props;
         while(p.parent) {

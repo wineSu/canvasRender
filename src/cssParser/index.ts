@@ -9,10 +9,6 @@ interface Children {
   }
 }
 
-interface JSONNode {
-  T: any,
-}
-
 type tokenObj = {
   type: string,
   value: string | number

@@ -52,6 +52,6 @@
     TODO: 
      1、实现过程中支持原生态组件化；
      2、接近 web api 生态，可以完全接入现有框架绘制渲染；
-
+<img src="https://github.com/wineSu/canvasRender/blob/main/example/demo.jpg" alt="Image text" style="zoom:50%;" />
 <p align = 'center'>©wineSu ©www.gitsu.cn</p>
 

@@ -77,7 +77,6 @@ class Tile {
     // 生成url
     createUrl() {
         this.url = getTileUrl(this.row, this.col, this.zoom);
-        console.log(this.url)
     }
     // 加载图片
     load() {
@@ -140,7 +139,7 @@ export class MapElement extends BaseElement {
             isMousedown: false,
             tileCache: {},
             currentTileCache: {},
-            center: [116.39, 39.90],
+            center: props['data-center'].split(','),
             zoom: 14,
             minZoom: 3,
             maxZoom: 18,

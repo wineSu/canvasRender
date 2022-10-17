@@ -103,6 +103,12 @@ class CanvasRender {
      * @param renderTree 
      */
     resetLayoutData = (renderTree) => {
+        renderTree.layout = null;
+        renderTree.lastLayout = null;
+        renderTree.shouldUpdate = null;
+        renderTree.lineIndex = null;
+        renderTree.nextAbsoluteChild = null;
+        renderTree.nextFlexChild = null;
         delete renderTree.layout;
         delete renderTree.lastLayout;
         delete renderTree.shouldUpdate;
@@ -194,24 +200,6 @@ class CanvasRender {
         return domTree;
     }
 
-    // todo 文字流式布局优化
-    // rawTextLayout = (renderTree) => {
-    //     renderTree.children?.map((child) => {
-    //         if((child.name === 'text')) {
-    //             const text = child['data-value'];
-    //             const row = Math.ceil(text.length / (child.layout.width / child.style.fontSize));
-    //             child.style.height = row * child.style.fontSize;
-    //         }
-    //         delete child.layout;
-    //         delete child.lastLayout;
-    //         delete child.shouldUpdate;
-    //         delete child.lineIndex;
-    //         delete child.nextAbsoluteChild;
-    //         delete child.nextFlexChild;
-    //         this.rawTextLayout(child);
-    //     });
-    // }
-
     /**
      * 布局树
      * @param renderTree 
@@ -223,8 +211,6 @@ class CanvasRender {
             width: document.documentElement.clientWidth
         }
         computeLayout(renderTree);
-        // this.rawTextLayout(renderTree);
-        // computeLayout(renderTree);
         return renderTree;
     }
 
@@ -262,21 +248,7 @@ class CanvasRender {
     renderElement = (tree) => {
         tree.children?.map((child) => {
             child.parent = tree;
-            // const newStyle = new Proxy(child.style, {
-            //     get: (target, key) => {
-            //     //   console.log(`监听到${target}对象的${String(key)}属性被访问了`, target)
-            //         return Reflect.get(target, key);
-            //     },
-            //     set: (target, key, newValue) => {
-            //         console.log(`监听到${child.attr.id || child.attr.class}对象的${String(key)}属性被设置值${newValue}`, target);
-            //         // 设置值重新渲染，后续需要区分是重绘还是回流，重绘无需重新计算布局，只调用对应组件的render即可
-            //         target[key] = newValue;
-            //         this.repaintRender();
-            //         // child.render(this.ctx);
-            //         return Reflect.set(target, key, newValue);
-            //     }
-            // });
-            // child.style = newStyle;
+            
             if(!child.ele || this.shouldUpdate(child)) {
                 const ele = new mapElement[child.name](child);
                 ele.render(this.ctx);
@@ -306,6 +278,11 @@ class CanvasRender {
         }, cache)) {
             return false;
         }
+
+        child.ele = null;
+        child.setStyle = null;
+        child.eventsFrie = null;
+        child.on = null;
 
         return true;
     }
@@ -383,7 +360,11 @@ class CanvasRender {
                 this.touchMsg[eventName] = touch;
             }
             
-            if ( eventName === 'touchend' && isClick(this.touchMsg) && item) {
+            if ((eventName === 'touchend' && isClick(this.touchMsg)) && item) {
+                item.eventsFrie?.(e, eventName);
+            }
+
+            if ( eventName === 'touchmove' && item) {
                 item.eventsFrie?.(e, eventName);
             }
         }

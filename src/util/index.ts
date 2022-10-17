@@ -1,3 +1,26 @@
+/**
+ * 地图绘制相关转换公式
+ */
+interface Position {
+    x: number
+    y: number
+    width: number
+    height: number
+    left: number
+    top: number
+}
+
+interface RealPosition {
+    x: number
+    y: number
+    w?: number
+    h?: number
+    originX?: number
+    originY?: number
+    originW?: number
+    originH?: number
+}
+
 // 角度转弧度
 const angleToRad = (angle) => {
     return angle * (Math.PI / 180)
@@ -17,7 +40,6 @@ export const lngLatToMercator = (lng, lat) => {
     let x = angleToRad(lng) * EARTH_RAD
     // 纬度先转弧度
     let rad = angleToRad(lat)
-    // 下面我就看不懂了
     let sin = Math.sin(rad)
     let y = (EARTH_RAD / 2) * Math.log((1 + sin) / (1 - sin))
     return [x, y]
@@ -119,6 +141,68 @@ export const getTileUrlPro = (x, y, z, url, {transformXYZ, getTileUrl} = ({} as 
         z = res[2]
     }
     return url.replace('{x}', x).replace('{y}', y).replace('{z}', z)
+}
+
+/**
+ * 计算渲染真正位置
+ */
+export const clipPosition: (position: Position, img: any) => RealPosition = (position, img) => {
+    const {x, y, width, height, left, top} = position;
+    if(x < left || y < top) {
+        if(x + TILE_SIZE > left + width) {
+            return {
+                x: 0,
+                y: top - y,
+                w: left + width - x,
+                h: TILE_SIZE - top + y,
+                originX: x,
+                originY: top,
+                originW: left + width - x,
+                originH: TILE_SIZE - top + y,
+            }
+        }
+
+        if(y + TILE_SIZE > top + height) {
+            return {
+                x: left-x,
+                y: 0,
+                w: TILE_SIZE - left + x,
+                h: height + top - y,
+                originX: left,
+                originY: y,
+                originW: TILE_SIZE - left + x,
+                originH: height + top - y,
+            }
+        }
+
+        return {
+            x: Math.max(left - x, 0),
+            y: Math.max(top - y, 0),
+            w: Math.max(TILE_SIZE - left + x, TILE_SIZE),
+            h: Math.max(TILE_SIZE - top + y, TILE_SIZE),
+            originX: Math.max(left, x),
+            originY: Math.max(top, y),
+            originW: Math.max(TILE_SIZE - left + x, TILE_SIZE),
+            originH: Math.max(TILE_SIZE - top + y, TILE_SIZE),
+        }
+    }
+
+    if(x + TILE_SIZE > left + width || y + TILE_SIZE > top + height) {
+        return {
+            x: 0,
+            y: 0,
+            w: Math.min(width + left - x, TILE_SIZE),
+            h: Math.min(height + top - y, TILE_SIZE),
+            originX: x,
+            originY: y,
+            originW: Math.min(width + left - x, TILE_SIZE),
+            originH: Math.min(height + top - y, TILE_SIZE),
+        }
+    }
+
+    return {
+        x, y
+    };
 }
 
 export const KEY = '0913a20b5d5a703b920e1ff0d9d26559'

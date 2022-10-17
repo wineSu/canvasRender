@@ -40,5 +40,6 @@ export class ViewElement extends BaseElement{
         ctx.closePath();
         ctx.clip();
         ctx.fillRect(x, y, w, h);
+        ctx.restore();
     }
 }

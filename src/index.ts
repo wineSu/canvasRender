@@ -6,10 +6,42 @@ import {_getElementsById, _getElementsByClassName, isClick} from './api';
 import {schedule} from './schedule';
 import {shallowEqual} from './util';
 
-const StyleContReg = /<style[^>]*>(.|\n)*<\/style>/gi;
-const DelStyleTagReg= /(<\/?style.*?>)/gi;
+interface mapElement {
+    view: typeof ViewElement;
+    text: typeof TextElement;
+    images: typeof ImageElement;
+    map: typeof MapElement;
+}
 
-const mapElement = {
+type StringResult = () => {
+    style: string,
+    xml: string
+}
+
+interface XmlObj {
+    children: any;
+    lastLayout?: any;
+    layout?: any;
+    name: string;
+    shouldUpdate?: boolean;
+    style: any
+}
+
+type Params = {
+    [key: string]: string;
+}
+
+type CssObj = Record<string, Params>;
+
+type ParseResult = () => {
+    xmlObj: XmlObj,
+    cssObj: CssObj
+}
+
+const StyleContReg: RegExp = /<style[^>]*>(.|\n)*<\/style>/gi;
+const DelStyleTagReg: RegExp = /(<\/?style.*?>)/gi;
+
+const mapElement: mapElement = {
     view: ViewElement,
     text: TextElement,
     images: ImageElement,
@@ -31,19 +63,21 @@ class CanvasRender {
         this.initRender(true);
     }
 
-    ctx: CanvasRenderingContext2D | null
-    tree: any
+    private ctx: CanvasRenderingContext2D | null
+    private tree: any
 
     // 事件相关
-    touchStart: (e: any) => void
-    touchEnd: (e: any) => void
-    touchMove: (e: any) => void
-    touchMsg: any
+    private touchStart: (e: MouseEvent) => void
+    private touchEnd: (e: MouseEvent) => void
+    private touchMove: (e: TouchEvent) => void
+    private touchMsg: {
+        [key: string]: MouseEvent
+    }
 
     /**
      * 初始化 web根结点
      */
-    init = () => {
+    private init = () => {
         const canvas:HTMLCanvasElement = document.createElement('canvas');
         document.body.appendChild(canvas);
         canvas.width = document.documentElement.clientWidth;
@@ -59,7 +93,7 @@ class CanvasRender {
      * 获取模板内容：包含 css和xml
      * @returns {style: string, xmlCont: string}
      */
-    getTempCont = () => {
+    private getTempCont: StringResult = () => {
         const temp: HTMLTemplateElement = document.getElementsByTagName('template')[0];
         const div: HTMLElement = document.createElement('tempDiv');
         div.appendChild( temp.content );
@@ -81,7 +115,7 @@ class CanvasRender {
     /**
      * 初始绘制
      */
-    initRender = (frist) => {
+    private initRender = (frist) => {
         // 计算布局树 利用 css-layout(yoga) 布局引擎
         const layoutTree = this.layoutTree(this.tree);
         // 拿到布局树中间结构后，利用 canvas api 绘制不同组件，也可以迁移至其他平台绘制
@@ -93,7 +127,7 @@ class CanvasRender {
     /**
      * 重绘 & 回流
      */
-    repaintRender = () => {
+    private repaintRender = () => {
         this.resetLayoutData(this.tree);
         this.initRender(false);
     }
@@ -102,7 +136,7 @@ class CanvasRender {
      * layout 数据重置，再次计算布局树
      * @param renderTree 
      */
-    resetLayoutData = (renderTree) => {
+    private resetLayoutData = (renderTree) => {
         renderTree.layout = null;
         renderTree.lastLayout = null;
         renderTree.shouldUpdate = null;
@@ -127,7 +161,7 @@ class CanvasRender {
      * @param cssTree 
      * @returns 
      */
-    renderTree = (domTree: any, cssTree: any) => {
+    private renderTree = (domTree: any, cssTree: any) => {
         let children = domTree.children || [];
 
         // 递归处理
@@ -205,7 +239,7 @@ class CanvasRender {
      * @param renderTree 
      * @returns 
      */
-    layoutTree = (renderTree) => {
+    private layoutTree = (renderTree) => {
         // 修正下最外部盒子宽度，方便后续子元素 flex 设置
         renderTree.style = {
             width: document.documentElement.clientWidth
@@ -218,7 +252,7 @@ class CanvasRender {
      * 编译出 domtree 和 cssobj
      * @returns {xmlObj, cssObj}
      */
-    parse = () => {
+    private parse: ParseResult = () => {
         let parseConfig = {
             attributeNamePrefix : "",
             attrNodeName: "attr", //default is 'false'
@@ -233,9 +267,9 @@ class CanvasRender {
         };
         const {style, xml} = this.getTempCont();
         // dom 树获取
-        const xmlObj = Parser(xml, parseConfig, true);
+        const xmlObj: XmlObj = Parser(xml, parseConfig, true);
         // csstree
-        const cssObj = cssParser(style);
+        const cssObj: CssObj = cssParser(style);
         return {
             xmlObj,
             cssObj
@@ -245,7 +279,7 @@ class CanvasRender {
     /**
      * 遍历布局树渲染组件, 追加节点、父子关系
      */
-    renderElement = (tree) => {
+    private renderElement = (tree) => {
         tree.children?.map((child) => {
             child.parent = tree;
             
@@ -263,7 +297,7 @@ class CanvasRender {
         })
     }
 
-    shouldUpdate = (child) => {
+    private shouldUpdate = (child) => {
         // 初次渲染
         if(!child.ele) {
             return true;
@@ -292,7 +326,7 @@ class CanvasRender {
      * @param child 
      * @param cssobj 
      */
-    setStyle = (child, cssobj) => {
+    private setStyle = (child, cssobj) => {
         Object.assign(child.style, cssobj)
         // 批量更新
         schedule(() => {
@@ -305,7 +339,7 @@ class CanvasRender {
      * @param id 
      * @returns 
      */
-    getElementsById = (id) => {
+    public getElementsById = (id) => {
         return _getElementsById(this.tree, [], id);
     }
     
@@ -314,11 +348,11 @@ class CanvasRender {
      * @param className 
      * @returns 
      */
-    getElementsByClassName = (className) => {
+    public getElementsByClassName = (className) => {
         return _getElementsByClassName(this.tree, [], className);
     }
 
-    getChildByPos(tree, x, y, itemList) {
+    private getChildByPos(tree, x, y, itemList) {
         let list = Object.keys(tree.children);
     
         for ( let i = 0; i < list.length;i++ ) {
@@ -334,7 +368,7 @@ class CanvasRender {
         }
     }
 
-    eventHandler(eventName) {
+    private eventHandler(eventName) {
         return (e) => {
             const touch = (e.touches && e.touches[0]) || e;
 
@@ -374,7 +408,7 @@ class CanvasRender {
      * 事件绑定
      * @returns 
      */
-    bindEvents() {
+    private bindEvents() {
         document.onmousedown  = this.touchStart;
         document.ontouchmove  = this.touchMove;
         document.onmouseup    = this.touchEnd;

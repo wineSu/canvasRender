@@ -8,7 +8,7 @@ export class TextElement extends BaseElement {
         super(props);
     }
 
-    render = (ctx) => {
+    render = (ctx: CanvasRenderingContext2D) => {
         const {layout, style} = this.props;
         let {left, right, top, bottom, width, height} = layout;
 

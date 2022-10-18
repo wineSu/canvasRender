@@ -149,7 +149,7 @@ export class MapElement extends BaseElement {
         }
     }
 
-    render = (ctx) => {
+    render = (ctx: CanvasRenderingContext2D) => {
         const { layout, style } = this.props;
         let { left, right, top, bottom, width, height } = layout;
         

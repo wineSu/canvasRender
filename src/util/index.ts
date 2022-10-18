@@ -205,8 +205,6 @@ export const clipPosition: (position: Position, img: any) => RealPosition = (pos
     };
 }
 
-export const KEY = '0913a20b5d5a703b920e1ff0d9d26559'
-
 export function shallowEqual(object1, object2) {
     const keys1: string[] = Object.keys(object1);
     const keys2: string[] = Object.keys(object2);

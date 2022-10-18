@@ -67,7 +67,7 @@ class CanvasRender {
     private tree: any
 
     // 事件相关
-    private touchStart: (e: MouseEvent) => void
+    private touchStart: (e: MouseEvent | TouchEvent) => void
     private touchEnd: (e: MouseEvent) => void
     private touchMove: (e: TouchEvent) => void
     private touchMsg: {
@@ -285,12 +285,14 @@ class CanvasRender {
             
             if(!child.ele || this.shouldUpdate(child)) {
                 const ele = new mapElement[child.name](child);
-                ele.render(this.ctx);
+                
                 child.setStyle = (cssobj) => {this.setStyle(child, cssobj)};
                 child.eventsFrie = ele.eventFrie;
                 child.on = (name, callback) => {
                     child[name] = callback;
                 }
+                
+                ele.render(this.ctx);
                 child.ele = ele;
             }
             this.renderElement(child);
@@ -393,12 +395,16 @@ class CanvasRender {
             if ( eventName === 'touchstart' || eventName === 'touchend' ) {
                 this.touchMsg[eventName] = touch;
             }
+
+            if (eventName === 'touchstart' && item) {
+                item.eventsFrie?.(e, eventName);
+            }
             
             if ((eventName === 'touchend' && isClick(this.touchMsg)) && item) {
                 item.eventsFrie?.(e, eventName);
             }
 
-            if ( eventName === 'touchmove' && item) {
+            if (eventName === 'touchmove' && item) {
                 item.eventsFrie?.(e, eventName);
             }
         }
@@ -409,7 +415,7 @@ class CanvasRender {
      * @returns 
      */
     private bindEvents() {
-        document.onmousedown  = this.touchStart;
+        document.ontouchstart = this.touchStart;
         document.ontouchmove  = this.touchMove;
         document.onmouseup    = this.touchEnd;
         document.onmouseleave = this.touchEnd;

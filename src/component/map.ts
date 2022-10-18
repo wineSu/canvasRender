@@ -5,7 +5,9 @@ import {
     getTileRowAndCol,
     lngLatToMercator,
     getPxFromLngLat,
-    clipPosition
+    mercatorToLngLat,
+    resolutions,
+    clipPosition,
 } from "../util";
 
 interface MapData {
@@ -164,6 +166,8 @@ export class MapElement extends BaseElement {
         this.renderTiles(left, top, width, height, ctx);
 
         ctx.restore();
+
+        this.bindMouseMove(left, top, width, height, ctx);
     }
 
     renderTiles = (left, top, width, height, ctx) => {
@@ -234,5 +238,25 @@ export class MapElement extends BaseElement {
                 }
             }
         }
+    }
+
+    bindMouseMove = (left, top, width, height, ctx) => {
+        let pageX = 0;
+        let pageY = 0;
+        this.props.on('touchstart', (e) => {
+            pageX = e.targetTouches[0].pageX;
+            pageY = e.targetTouches[0].pageY;
+        })
+        this.props.on('touchmove', (e) => {
+            let mx = Number(e.targetTouches[0].pageX - pageX) * resolutions[this.data.zoom];
+            let my = Number(e.targetTouches[0].pageY - pageY) * resolutions[this.data.zoom];
+            const [lon, lat] = this.data.center;
+            let [x, y] = lngLatToMercator(lon, lat);
+            // 更新拖动后的中心点经纬度
+            this.data.center = mercatorToLngLat(x - mx, my + y);
+            // 清除画布重新渲染瓦片
+            ctx.clearRect(left, top, width, height);
+            this.renderTiles(left, top, width, height, ctx);
+        })
     }
 }
